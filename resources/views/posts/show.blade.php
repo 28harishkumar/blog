@@ -3,7 +3,7 @@
 @section('title')
 	@if($post)
 		{{ $post->title }}
-		@if(!Auth::guest() && $post->author_id == Auth::user()->id)
+		@if(!Auth::guest() && ($post->author_id == Auth::user()->id || Auth::user()->is_admin()))
 			<button class="btn" style="float: right"><a href="{{ url('edit/'.$post->slug)}}">Edit Post</a></button>
 		@endif
 	@else
@@ -19,7 +19,7 @@
 
 @if($post)
 	<div>
-		<?php echo $post->body; ?>
+		{!! $post->body !!}
 	</div>	
 	<div>
 		<h2>Leave a comment</h2>

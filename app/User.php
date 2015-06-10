@@ -42,4 +42,24 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 	{
 		return $this->hasMany('App\Comments','from_user');
 	}
+	
+	public function can_post()
+	{
+		$role = $this->role;
+		if($role == 'author' || $role == 'admin')
+		{
+			return TRUE;
+		}
+		return FALSE;
+	}
+	
+	public function is_admin()
+	{
+		$role = $this->role;
+		if($role == 'admin')
+		{
+			return TRUE;
+		}
+		return FALSE;
+	}
 }

@@ -4,6 +4,7 @@ use App\Posts;
 use App\User;
 use Redirect;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\PostFormRequest;
 
 use Illuminate\Http\Request;
 
@@ -18,7 +19,7 @@ class PostController extends Controller {
 	{
 		$posts = Posts::where('active',1)->orderBy('created_at','desc')->paginate(5);
 		$title = 'Latest Posts';
-		return view('home')->with('posts',$posts)->with('title',$title);
+		return view('home')->withPosts($posts)->withTitle($title);
 	}
 
 	/**
@@ -26,10 +27,17 @@ class PostController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function create()
+	public function create(Request $request)
 	{
 		// 
-		return view('posts.create');
+		if($request->user()->can_post())
+		{
+			return view('posts.create');
+		}	
+		else 
+		{
+			return redirect('/')->withErrors('You have not sufficient permissions for writing post');
+		}
 	}
 
 	/**
@@ -37,24 +45,25 @@ class PostController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function store(Request $request)
+	public function store(PostFormRequest $request)
 	{
-		
-		$input['title'] = $request->input('title');
-		$input['body'] = $request->input('body');
-		$input['slug'] = str_slug($input['title']);
-		$input['author_id'] = $request->user()->id;
+		$post = new Posts();
+		$post->title = $request->get('title');
+		$post->body = $request->get('body');
+		$post->slug = str_slug($post->title);
+		$post->author_id = $request->user()->id;
 		if($request->has('save'))
 		{
-			$input['active'] = 0;
-			Posts::create( $input ); 
-			return redirect('edit/'.$input['slug'])->with('message', 'Post saved successfully');			
+			$post->active = 0;
+			$message = 'Post saved successfully';			
 		}			
-		else {
-			$input['active'] = 1;
-			Posts::create( $input );
- 			return redirect('edit/'.$input['slug'])->with('message', 'Post published successfully');
-		} 		
+		else 
+		{
+			$post->active = 1;
+			$message = 'Post published successfully';
+		}
+		$post->save();
+		return redirect('edit/'.$post->slug)->withMessage($message);
 	}
 
 	/**
@@ -70,14 +79,14 @@ class PostController extends Controller {
 		if($post)
 		{
 			if($post->active == '0')
-				return redirect('/')->with('message','requested page not found');
+				return redirect('/')->withErrors('requested page not found');
 			$comments = $post->comments;	
 		}
 		else 
 		{
-			return redirect('/')->with('message','requested page not found');
+			return redirect('/')->withErrors('requested page not found');
 		}
-		return view('posts.show')->with('post',$post)->with('comments',$comments);
+		return view('posts.show')->withPost($post)->withComments($comments);
 	}
 
 	/**
@@ -89,11 +98,11 @@ class PostController extends Controller {
 	public function edit(Request $request,$slug)
 	{
 		$post = Posts::where('slug',$slug)->first();
-		if($post && $request->user()->id == $post->author_id)
+		if($post && ($request->user()->id == $post->author_id || $request->user()->is_admin()))
 			return view('posts.edit')->with('post',$post);
 		else 
 		{
-			return redirect('/');
+			return redirect('/')->withErrors('you have not sufficient permissions');
 		}
 	}
 
@@ -108,26 +117,43 @@ class PostController extends Controller {
 		//
 		$post_id = $request->input('post_id');
 		$post = Posts::find($post_id);
-		if($post && $post->author_id == $request->user()->id)
+		if($post && ($post->author_id == $request->user()->id || $request->user()->is_admin()))
 		{
-			$post->title = $request->input('title');
+			$title = $request->input('title');
+			$slug = str_slug($title);
+			$duplicate = Posts::where('slug',$slug)->first();
+			if($duplicate)
+			{
+				if($duplicate->id != $post_id)
+				{
+					return redirect('edit/'.$post->slug)->withErrors('Title already exists.')->withInput();
+				}
+				else 
+				{
+					$post->slug = $slug;
+				}
+			}
+			
+			$post->title = $title;
 			$post->body = $request->input('body');
-			$post->slug = str_slug($post->title);
+			
 			if($request->has('save'))
 			{
 				$post->active = 0;
-				$post->save(); 
-				return redirect('edit/'.$post->slug)->with('message', 'Post saved successfully');			
+				$message = 'Post saved successfully';
+				$landing = 'edit/'.$post->slug;
 			}			
 			else {
 				$post->active = 1;
-				$post->save();
-	 			return redirect($post->slug)->with('message', 'Post updated successfully');
-			} 
+				$message = 'Post updated successfully';
+				$landing = $post->slug;
+			}
+			$post->save();
+	 		return redirect($landing)->withMessage($message);
 		}
 		else
 		{
-			return redirect('/');
+			return redirect('/')->withErrors('you have not sufficient permissions');
 		}
 	}
 
@@ -141,14 +167,14 @@ class PostController extends Controller {
 	{
 		//
 		$post = Posts::find($id);
-		if($post && $post->author_id == $request->user()->id)
+		if($post && ($post->author_id == $request->user()->id || $request->user()->is_admin()))
 		{
 			$post->delete();
 			$data['message'] = 'Post deleted Successfully';
 		}
 		else 
 		{
-			$data['error'] = 'Invalid Operation';
+			$data['errors'] = 'Invalid Operation. You have not sufficient permissions';
 		}
 		
 		return redirect('/')->with($data);
@@ -165,7 +191,7 @@ class PostController extends Controller {
 		//
 		$posts = Posts::where('author_id',$id)->where('active',1)->orderBy('created_at','desc')->paginate(5);
 		$title = User::find($id)->name;
-		return view('home')->with('posts',$posts)->with('title',$title);
+		return view('home')->withPosts($posts)->withTitle($title);
 	}
 
 	public function user_posts_all(Request $request)
@@ -174,7 +200,7 @@ class PostController extends Controller {
 		$user = $request->user();
 		$posts = Posts::where('author_id',$user->id)->orderBy('created_at','desc')->paginate(5);
 		$title = $user->name;
-		return view('home')->with('posts',$posts)->with('title',$title);
+		return view('home')->withPosts($posts)->withTitle($title);
 	}
 	
 	public function user_posts_draft(Request $request)
@@ -183,6 +209,6 @@ class PostController extends Controller {
 		$user = $request->user();
 		$posts = Posts::where('author_id',$user->id)->where('active',0)->orderBy('created_at','desc')->paginate(5);
 		$title = $user->name;
-		return view('home')->with('posts',$posts)->with('title',$title);
+		return view('home')->withPosts($posts)->withTitle($title);
 	}
 }

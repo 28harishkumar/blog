@@ -28,7 +28,7 @@
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="http://www.findalltogeher.com">Find All Together</a>
+					<a class="navbar-brand" href="http://www.findalltogether.com">Find All Together</a>
 				</div>
 
 				<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
@@ -50,14 +50,16 @@
 						<li class="dropdown">
 							<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">{{ Auth::user()->name }} <span class="caret"></span></a>
 							<ul class="dropdown-menu" role="menu">
+								@if (Auth::user()->can_post())
 								<li>
 									<a href="{{ url('/new-post') }}">Add new post</a>
 								</li>
 								<li>
-									<a href="{{ url('/user/'.Auth::id()) }}">My Profile</a>
-								</li>
-								<li>
 									<a href="{{ url('/user/'.Auth::id().'/posts') }}">My Posts</a>
+								</li>
+								@endif
+								<li>
+									<a href="{{ url('/user/'.Auth::id()) }}">My Profile</a>
 								</li>
 								<li>
 									<a href="{{ url('/auth/logout') }}">Logout</a>
@@ -80,11 +82,13 @@
 			@endif
 			@if ($errors->any())
 			<div class='flash alert-danger'>
-				@foreach ( $errors->all() as $error )
-				<p>
-					{{ $error }}
-				</p>
-				@endforeach
+				<ul class="panel-body">
+					@foreach ( $errors->all() as $error )
+					<li>
+						{{ $error }}
+					</li>
+					@endforeach
+				</ul>
 			</div>
 			@endif
 			<div class="row">
@@ -98,6 +102,11 @@
 							@yield('content')
 						</div>
 					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-10 col-md-offset-1">
+					<p>Copyright &copy; 2015 | <a href="http://www.findalltogether.com">Find All Together</a></p>
 				</div>
 			</div>
 		</div>
