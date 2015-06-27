@@ -48,9 +48,9 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 		$role = $this->role;
 		if($role == 'author' || $role == 'admin')
 		{
-			return TRUE;
+			return true;
 		}
-		return FALSE;
+		return false;
 	}
 	
 	public function is_admin()
@@ -58,8 +58,8 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 		$role = $this->role;
 		if($role == 'admin')
 		{
-			return TRUE;
+			return true;
 		}
-		return FALSE;
+		return false;
 	}
 }

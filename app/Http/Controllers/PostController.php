@@ -8,6 +8,9 @@ use App\Http\Requests\PostFormRequest;
 
 use Illuminate\Http\Request;
 
+// note: use true and false for active posts in postgresql database
+// here '0' and '1' are used for active posts because of mysql database
+
 class PostController extends Controller {
 
 	/**
@@ -17,7 +20,7 @@ class PostController extends Controller {
 	 */
 	public function index()
 	{
-		$posts = Posts::where('active',1)->orderBy('created_at','desc')->paginate(5);
+		$posts = Posts::where('active','1')->orderBy('created_at','desc')->paginate(5);
 		$title = 'Latest Posts';
 		return view('home')->withPosts($posts)->withTitle($title);
 	}
@@ -78,7 +81,7 @@ class PostController extends Controller {
 
 		if($post)
 		{
-			if($post->active == '0')
+			if($post->active == false)
 				return redirect('/')->withErrors('requested page not found');
 			$comments = $post->comments;	
 		}
@@ -189,7 +192,7 @@ class PostController extends Controller {
 	public function user_posts($id)
 	{
 		//
-		$posts = Posts::where('author_id',$id)->where('active',1)->orderBy('created_at','desc')->paginate(5);
+		$posts = Posts::where('author_id',$id)->where('active','1')->orderBy('created_at','desc')->paginate(5);
 		$title = User::find($id)->name;
 		return view('home')->withPosts($posts)->withTitle($title);
 	}
@@ -207,7 +210,7 @@ class PostController extends Controller {
 	{
 		//
 		$user = $request->user();
-		$posts = Posts::where('author_id',$user->id)->where('active',0)->orderBy('created_at','desc')->paginate(5);
+		$posts = Posts::where('author_id',$user->id)->where('active','0')->orderBy('created_at','desc')->paginate(5);
 		$title = $user->name;
 		return view('home')->withPosts($posts)->withTitle($title);
 	}

@@ -13,11 +13,6 @@ class PostFormRequest extends Request {
 	 */
 	public function authorize()
 	{
-		if(!Auth::check())
-		{
-			return false;
-		}
-		
 		if($this->user()->can_post())
 		{
 			return true;
