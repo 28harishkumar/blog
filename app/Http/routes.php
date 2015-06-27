@@ -38,10 +38,10 @@ Route::group(['middleware' => ['auth']], function()
 	Route::get('delete/{id}','PostController@destroy');
 	
 	// display user's all posts
-	Route::get('my-all-posts','PostController@user_posts_all');
+	Route::get('my-all-posts','UserController@user_posts_all');
 	
 	// display user's drafts
-	Route::get('my-drafts','PostController@user_posts_draft');
+	Route::get('my-drafts','UserController@user_posts_draft');
 	
 	
 	// add comment
@@ -56,7 +56,7 @@ Route::group(['middleware' => ['auth']], function()
 Route::get('user/{id}','UserController@profile')->where('id', '[0-9]+');
 
 // display list of posts
-Route::get('user/{id}/posts','PostController@user_posts')->where('id', '[0-9]+');
+Route::get('user/{id}/posts','UserController@user_posts')->where('id', '[0-9]+');
 
 // display single post
 Route::get('/{slug}',['as' => 'post', 'uses' => 'PostController@show'])->where('slug', '[A-Za-z0-9-_]+');
