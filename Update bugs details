@@ -1,0 +1,18 @@
+1. I have find a wrong redirection in my local server, I cannot sure if it is a bug.
+   When I visited the path: blog/public/auth/, I would visit a wrong webstite.
+   I have configurated the website depending on your tutorial, but there is still a wrong redirection.
+   I think you may check your code.
+   
+2. I found you may forget to set HttpOnly flag in cookies.
+   You can see the problem in a email which I sent to you.
+   
+3. There is a terrible XSS bug in your post link, I can add a XSS injection link in a new post.
+   You also can see the detail in the email I have sent to you.
+   
+ 
+ 4.If there is a command " AddType application/x-httpd-php.jpg" in apache configuration,
+   there will be a upload bug depending on the configuration of server.
+   
+   I have write the detail of these problems in the email I sent to you.
+   
+   
