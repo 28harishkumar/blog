@@ -54,6 +54,13 @@ class PostController extends Controller {
 		$post->title = $request->get('title');
 		$post->body = $request->get('body');
 		$post->slug = str_slug($post->title);
+		
+		$duplicate = Posts::where('slug',$post->slug)->first();
+		if($duplicate)
+		{
+			return redirect('edit/'.$post->slug)->withErrors('Title already exists.')->withInput();
+		}	
+		
 		$post->author_id = $request->user()->id;
 		if($request->has('save'))
 		{
