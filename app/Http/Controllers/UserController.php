@@ -56,12 +56,12 @@ class UserController extends Controller {
 		} else {
 			$data['author'] = null;
 		}
-		$data['comments_count'] = $data['user'] -> comments -> count();
-		$data['posts_count'] = $data['user'] -> posts -> count();
-		$data['posts_active_count'] = $data['user'] -> posts -> where('active', '1') -> count();
+		$data['comments_count'] = $data['user']->comments->count();
+		$data['posts_count'] = $data['user']->posts->count();
+		$data['posts_active_count'] = $data['user']->posts->where('active', 1)->count();
 		$data['posts_draft_count'] = $data['posts_count'] - $data['posts_active_count'];
-		$data['latest_posts'] = $data['user'] -> posts -> where('active', '1') -> take(5);
-		$data['latest_comments'] = $data['user'] -> comments -> take(5);
+		$data['latest_posts'] = $data['user']->posts->where('active', 1)->take(5);
+		$data['latest_comments'] = $data['user']->comments->take(5);
 		return view('admin.profile', $data);
 	}
 
