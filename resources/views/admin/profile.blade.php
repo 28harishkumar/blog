@@ -12,11 +12,6 @@
 		</li>
 		<li class="list-group-item panel-body">
 			<table class="table-padding">
-				<style>
-					.table-padding td{
-						padding: 3px 8px;
-					}
-				</style>
 				<tr>
 					<td>Total Posts</td>
 					<td> {{$posts_count}}</td>
